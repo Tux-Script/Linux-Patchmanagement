@@ -3,7 +3,7 @@
 # created by Dipl.-Inf. Christoph Pregla
 # github: https://github.com/Tux-Script/Linux-Patchmanagement
 #
-# Version 0.0.1 (initial)
+# Version 0.0.2 (initial)
 #
 #########################
 #	Parameter	#
@@ -70,7 +70,7 @@ function read_param() {
 	exit 1;
 }
 function format_grep_filters() {
-	
+	exit 1;
 }
 function read_hostlist() {
 	exit 1;
@@ -94,9 +94,6 @@ function update_zypper() {
 	exit 1;
 }
 function suse_sp_upgrade() {
-	exit 1;
-}
-function restart_services() {
 	exit 1;
 }
 
