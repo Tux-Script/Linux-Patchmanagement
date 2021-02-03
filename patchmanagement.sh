@@ -8,17 +8,60 @@
 #########################
 #	Parameter	#
 #########################
-slog=""		#Path to file for script log
-hlogs=""	#Path to directory for save all host logs ($hostname.log)
+declare -r logpath="logs"
+declare -r slog="$logpath/$scriptname.log"	#Path to file for script log
+declare -r hlogs=""	#Path to directory for save all host logs ($hostname.log)
+debuglvl="DEBUG" # DEBUG, OK, INFO, WARN, CRIT
+
+
 debug=false	#=true to activate logging in debug-mode
 csv="hosts.csv"	#path to csv with host list
 
 #########################
 #	Functions	#
 #########################
-#params: 1: stat , 2: reason , 3: erroroutput
+#Funktion timestamp
+# Erzeugt bei Aufruf einen aktuellen Zeitstempel nach vorgegebenen Format fürs logging
+#Rückgabewert: Zeitstempel
+function timestamp() {
+
+        timestamp=`/bin/date +%Y-%m-%d-%H:%M:%S`
+        echo $timestamp
+}
+#Funktion logging
+# Gibt übergebene Werte mit einem aktuellen Zeitstempel ins LOG
+#params: 1: logfile , 2: stat , 3: reason
 function logging() {
-	exit 1;
+        logf="$1";
+        stat="$2";
+        out="PID=$$ $3";
+	
+	if [ ! -f $logf ]; then
+		touch $logf;
+	fi
+        if [[ $stat == "line" ]]; then
+                echo "`timestamp` $out" >> $logf
+        else
+                if [[ "$debuglvl" == "DEBUG" ]]; then
+                        echo "`timestamp` $stat $out" >> $logf
+                elif [[ "$debuglvl" == "OK"  ]]; then
+                        if [[ "$stat" != "DEBUG" ]]; then
+                                echo "`timestamp` $stat $out" >> $logf
+                        fi
+                elif [[ "$debuglvl" == "INFO" ]] ; then
+                        if [[ "$stat" != "DEBUG" && "$stat" != "OK" ]]; then
+                                echo "`timestamp` $stat $out" >> $logf
+                        fi
+                elif [[ "$debuglvl" == "WARN" ]] ; then
+                        if [[ "$stat" == "WARN" || "$stat" == "CRIT" ]]; then
+                                echo "`timestamp` $stat $out" >> $logf
+                        fi
+                elif [[ "$debuglvl" == "CRIT" && "$stat" == "CRIT" ]]; then
+                        echo "`timestamp` $stat $out" >> $logf
+                fi
+                # Alle anderen andere Fälle werden nicht geloggt.
+        fi
+
 }
 function save_logs() {
 	exit 1;
@@ -67,10 +110,10 @@ function restart_services() {
 ###########################
 ###########################
 
-if [ ! -f $slog ]; then
-	$TOUCH $slog;
-fi
+logging "$slog" "line" "================================================================"
+logging "$slog" "DEBUG" "start script and run read_param()"
 #read script params
 read_param
 
+logging "$slog" "INFO" "script ended."
 exit 0;
